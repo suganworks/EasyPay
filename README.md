@@ -35,7 +35,7 @@ Make sure you have the following installed before running the project:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/EasyPay.git
+git clone https://github.com/suganworks/EasyPay.git
 cd EasyPay
 ```
 
