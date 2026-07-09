@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Define environment variables if needed
         ASPNETCORE_ENVIRONMENT = 'Development'
         COMPOSE_PROJECT_NAME = 'easypay'
     }
@@ -10,21 +9,29 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from source control
+                
                 echo 'Checking out source code...'
                 checkout scm
             }
         }
 
-        stage('Backend Unit Tests') {
+        stage('Backend Build & SonarQube') {
             steps {
-                echo 'Running .NET Backend Tests...'
+                echo 'Running SonarQube Analysis and .NET Tests...'
                 dir('EasyPay backend') {
-                    // Restore dependencies and run tests
-                    // We use the docker container context to run tests if we don't want to install .NET SDK on Jenkins directly
-                    // Or if .NET SDK is installed on the Jenkins agent:
+                    
+                    bat 'dotnet tool install --global dotnet-sonarscanner || exit 0'
+                    
+                    
+                    bat 'dotnet sonarscanner begin /k:"EasyPay" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="sqa_483a409711987bb2812aed130da1e9cdda433e7c"'
+                    
                     bat 'dotnet restore EasyPay.sln'
-                    bat 'dotnet test EasyPay.sln --no-restore --verbosity normal'
+                    
+                    bat 'dotnet build EasyPay.sln --no-restore'
+                    
+                    bat 'dotnet test EasyPay.sln --no-build --verbosity normal'
+                    
+                    bat 'dotnet sonarscanner end /d:sonar.login="sqa_483a409711987bb2812aed130da1e9cdda433e7c"'
                 }
             }
         }
@@ -33,7 +40,6 @@ pipeline {
             steps {
                 echo 'Building React Frontend...'
                 dir('EasyPay frontend') {
-                    // Using standard npm commands (Requires Node.js on Jenkins agent)
                     bat 'npm install'
                     bat 'npm run build'
                 }
@@ -43,7 +49,6 @@ pipeline {
         stage('Docker Build') {
             steps {
                 echo 'Building Docker Images...'
-                // Build the services defined in docker-compose.yml
                 bat 'docker-compose build'
             }
         }
@@ -51,7 +56,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying Application with Docker Compose...'
-                // Stop existing containers, remove orphans, and start fresh
                 bat 'docker-compose down --remove-orphans'
                 bat 'docker-compose up -d'
             }
@@ -66,7 +70,7 @@ pipeline {
             echo 'Pipeline failed! Please check the logs.'
         }
         always {
-            // Optional cleanup steps can go here
+            
             echo 'Cleaning up workspace...'
             cleanWs()
         }
