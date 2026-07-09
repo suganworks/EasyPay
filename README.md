@@ -129,12 +129,12 @@ When the database is created, it is seeded with sample users. You can log in usi
 
 **Password:** `EasyPay@123!`
 
-| Role | Username |
-|------|----------|
-| **Admin** | `admin` |
-| **HR Manager** | `amitabh.bachchan` |
-| **Payroll Processor** | `rajinikanth.superstar` |
-| **Manager** | `aamir.khan`, `shahrukh.khan` |
-| **Employee** | `sachin.tendulkar`, `virat.kohli`, `ms.dhoni`, `alia.bhatt` |
+| Role | Username | Email |
+|------|----------|-------|
+| **Admin** | `admin` | `admin@easypay.com` |
+| **HR Manager** | `amitabh.bachchan` | `grootthe38@gmail.com` |
+| **Payroll Processor** | `rajinikanth.superstar` | `rajinikanth@easypay.in` |
+| **Manager** | `aamir.khan`, `shahrukh.khan` | `aamir.khan@easypay.in`, `shahrukh.khan@easypay.in` |
+| **Employee** | `sachin.tendulkar`, `virat.kohli`, `ms.dhoni`, `alia.bhatt` | `sachin.tendulkar@easypay.in`, `virat.kohli@easypay.in`, `ms.dhoni@easypay.in`, `alia.bhatt@easypay.in` |
 
 *(Note: The actual password seed is securely hashed via BCrypt).*
