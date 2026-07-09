@@ -559,7 +559,7 @@ namespace EasyPay.Infrastructure.Migrations
                 values: new object[,]
                 {
                     { 1, "admin", "admin@easypay.com", pwdHash, 1, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
-                    { 2, "amitabh.bachchan", "grootthe38@gmail.com", pwdHash, 2, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 2, "amitabh.bachchan", "amitabh.bachchan@easypay.in", pwdHash, 2, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
                     { 3, "rajinikanth.superstar", "rajinikanth@easypay.in", pwdHash, 3, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
                     { 4, "aamir.khan", "aamir.khan@easypay.in", pwdHash, 5, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
                     { 5, "deepika.padukone", "deepika.padukone@easypay.in", pwdHash, 5, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },

@@ -132,7 +132,7 @@ When the database is created, it is seeded with sample users. You can log in usi
 | Role | Username | Email |
 |------|----------|-------|
 | **Admin** | `admin` | `admin@easypay.com` |
-| **HR Manager** | `amitabh.bachchan` | `grootthe38@gmail.com` |
+| **HR Manager** | `amitabh.bachchan` | `amitabh.bachchan@easypay.in` |
 | **Payroll Processor** | `rajinikanth.superstar` | `rajinikanth@easypay.in` |
 | **Manager** | `aamir.khan`, `shahrukh.khan` | `aamir.khan@easypay.in`, `shahrukh.khan@easypay.in` |
 | **Employee** | `sachin.tendulkar`, `virat.kohli`, `ms.dhoni`, `alia.bhatt` | `sachin.tendulkar@easypay.in`, `virat.kohli@easypay.in`, `ms.dhoni@easypay.in`, `alia.bhatt@easypay.in` |
