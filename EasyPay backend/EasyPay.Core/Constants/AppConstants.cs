@@ -35,6 +35,7 @@ public static class AppConstants
         public const string DuplicateUsername     = "A user with this username already exists.";
         public const string InvalidRefreshToken   = "Invalid or expired refresh token.";
         public const string PasswordResetInvalid  = "Invalid or expired password reset token.";
+        public const string EmployeeProfileNotFound = "Employee profile not found.";
     }
 
     public static class SuccessMessages
@@ -58,5 +59,42 @@ public static class AppConstants
         public const int MaxFailedAttempts  = 5;
         public const int LockoutMinutes     = 30;
         public const int PasswordResetHours = 24;
+    }
+
+    /// <summary>Entity type name constants for audit logging and NotFoundException messages.</summary>
+    public static class EntityNames
+    {
+        public const string Employee        = "Employee";
+        public const string Department      = "Department";
+        public const string Designation     = "Designation";
+        public const string LeaveRequest    = "LeaveRequest";
+        public const string Timesheet       = "Timesheet";
+        public const string Benefit         = "Benefit";
+        public const string EmployeeBenefit = "EmployeeBenefit";
+        public const string PayrollPolicy   = "PayrollPolicy";
+        public const string Payroll         = "Payroll";
+        public const string User            = "User";
+    }
+
+    /// <summary>Workflow status strings shared across Leave, Timesheet, and Payroll.</summary>
+    public static class WorkflowStatus
+    {
+        public const string Pending    = "Pending";
+        public const string Approved   = "Approved";
+        public const string Rejected   = "Rejected";
+        public const string Cancelled  = "Cancelled";
+        public const string Active     = "Active";
+        public const string Terminated = "Terminated";
+        public const string Paid       = "Paid";
+    }
+
+    /// <summary>SQL column type strings for EF Core model configuration (S1192).</summary>
+    public static class DecimalColumnTypes
+    {
+        public const string Money    = "decimal(18,2)";
+        public const string Rate     = "decimal(5,2)";
+        public const string Tax      = "decimal(10,2)";
+        public const string Hours    = "decimal(8,2)";
+        public const string HoursDay = "decimal(4,2)";
     }
 }

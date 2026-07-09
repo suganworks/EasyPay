@@ -51,11 +51,11 @@ public class EmployeeService : IEmployeeService
             throw new ConflictException(AppConstants.ErrorMessages.DuplicateEmail);
 
         // Validate department & designation exist
-        var dept = await _deptRepo.GetByIdAsync(dto.DepartmentId)
-            ?? throw new NotFoundException("Department", dto.DepartmentId);
+        _ = await _deptRepo.GetByIdAsync(dto.DepartmentId)
+            ?? throw new NotFoundException(AppConstants.EntityNames.Department, dto.DepartmentId);
 
-        var desig = await _desigRepo.GetByIdAsync(dto.DesignationId)
-            ?? throw new NotFoundException("Designation", dto.DesignationId);
+        _ = await _desigRepo.GetByIdAsync(dto.DesignationId)
+            ?? throw new NotFoundException(AppConstants.EntityNames.Designation, dto.DesignationId);
 
         // Create user account (role = Employee)
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, workFactor: 11);
@@ -94,7 +94,7 @@ public class EmployeeService : IEmployeeService
             ManagerId        = dto.ManagerId,
             JoiningDate      = dto.JoiningDate,
             EmploymentType   = dto.EmploymentType,
-            EmploymentStatus = "Active",
+            EmploymentStatus = AppConstants.WorkflowStatus.Active,
             BankName         = dto.BankName,
             BankAccountNo    = dto.BankAccountNo,
             BankIFSC         = dto.BankIFSC,
@@ -106,7 +106,7 @@ public class EmployeeService : IEmployeeService
 
         await _employeeRepo.AddAsync(employee);
 
-        await _auditService.LogAsync("Create", "Employee", employee.EmployeeId.ToString(),
+        await _auditService.LogAsync("Create", AppConstants.EntityNames.Employee, employee.EmployeeId.ToString(),
             newValues: new { employee.EmployeeCode, employee.FirstName, employee.LastName });
 
         _logger.LogInformation("Employee created: {Code} - {Name}", employee.EmployeeCode, employee.FullName);
@@ -127,15 +127,15 @@ public class EmployeeService : IEmployeeService
     public async Task<EmployeeResponseDto> UpdateAsync(int employeeId, UpdateEmployeeDto dto)
     {
         var employee = await _employeeRepo.GetWithDetailsAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
 
         var oldValues = MapToResponse(employee);
 
         // Validate department & designation
         _ = await _deptRepo.GetByIdAsync(dto.DepartmentId)
-            ?? throw new NotFoundException("Department", dto.DepartmentId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Department, dto.DepartmentId);
         _ = await _desigRepo.GetByIdAsync(dto.DesignationId)
-            ?? throw new NotFoundException("Designation", dto.DesignationId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Designation, dto.DesignationId);
 
         employee.FirstName        = dto.FirstName;
         employee.LastName         = dto.LastName;
@@ -165,7 +165,7 @@ public class EmployeeService : IEmployeeService
 
         await _employeeRepo.UpdateAsync(employee);
 
-        await _auditService.LogAsync("Update", "Employee", employeeId.ToString(),
+        await _auditService.LogAsync("Update", AppConstants.EntityNames.Employee, employeeId.ToString(),
             oldValues: oldValues, newValues: dto);
 
         return await GetByIdAsync(employeeId);
@@ -174,14 +174,14 @@ public class EmployeeService : IEmployeeService
     public async Task<EmployeeResponseDto> GetByIdAsync(int employeeId)
     {
         var employee = await _employeeRepo.GetWithDetailsAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
         return MapToResponse(employee);
     }
 
     public async Task<EmployeeResponseDto> GetByCodeAsync(string code)
     {
         var employee = await _employeeRepo.GetByEmployeeCodeAsync(code)
-            ?? throw new NotFoundException("Employee", code);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, code);
         return MapToResponse(employee);
     }
 
@@ -213,29 +213,29 @@ public class EmployeeService : IEmployeeService
     public async Task DeactivateAsync(int employeeId)
     {
         var employee = await _employeeRepo.GetByIdAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
 
         employee.IsActive         = false;
-        employee.EmploymentStatus = "Terminated";
+        employee.EmploymentStatus = AppConstants.WorkflowStatus.Terminated;
         employee.TerminationDate  = DateOnly.FromDateTime(DateTime.UtcNow);
         employee.UpdatedBy        = _currentUser.UserId;
 
         await _employeeRepo.UpdateAsync(employee);
-        await _auditService.LogAsync("Deactivate", "Employee", employeeId.ToString());
+        await _auditService.LogAsync("Deactivate", AppConstants.EntityNames.Employee, employeeId.ToString());
     }
 
     public async Task ReactivateAsync(int employeeId)
     {
         var employee = await _employeeRepo.GetByIdAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
 
         employee.IsActive         = true;
-        employee.EmploymentStatus = "Active";
+        employee.EmploymentStatus = AppConstants.WorkflowStatus.Active;
         employee.TerminationDate  = null;
         employee.UpdatedBy        = _currentUser.UserId;
 
         await _employeeRepo.UpdateAsync(employee);
-        await _auditService.LogAsync("Reactivate", "Employee", employeeId.ToString());
+        await _auditService.LogAsync("Reactivate", AppConstants.EntityNames.Employee, employeeId.ToString());
     }
 
     // ─── Mappers ──────────────────────────────────────────────────────────────
@@ -317,14 +317,14 @@ public class DepartmentService : IDepartmentService
         };
 
         await _repo.AddAsync(dept);
-        await _auditService.LogAsync("Create", "Department", dept.DepartmentId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Create", AppConstants.EntityNames.Department, dept.DepartmentId.ToString(), newValues: dto);
         return MapToResponse(dept);
     }
 
     public async Task<DepartmentResponseDto> UpdateAsync(int departmentId, UpdateDepartmentDto dto)
     {
         var dept = await _repo.GetByIdAsync(departmentId)
-            ?? throw new NotFoundException("Department", departmentId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Department, departmentId);
 
         dept.DepartmentName = dto.DepartmentName;
         dept.Description    = dto.Description;
@@ -332,14 +332,14 @@ public class DepartmentService : IDepartmentService
         dept.IsActive       = dto.IsActive;
 
         await _repo.UpdateAsync(dept);
-        await _auditService.LogAsync("Update", "Department", departmentId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Update", AppConstants.EntityNames.Department, departmentId.ToString(), newValues: dto);
         return MapToResponse(dept);
     }
 
     public async Task<DepartmentResponseDto> GetByIdAsync(int departmentId)
     {
         var dept = await _repo.GetWithEmployeesAsync(departmentId)
-            ?? throw new NotFoundException("Department", departmentId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Department, departmentId);
         return MapToResponse(dept);
     }
 
@@ -358,14 +358,14 @@ public class DepartmentService : IDepartmentService
     public async Task DeleteAsync(int departmentId)
     {
         var dept = await _repo.GetWithEmployeesAsync(departmentId)
-            ?? throw new NotFoundException("Department", departmentId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Department, departmentId);
 
         if (dept.Employees.Any(e => e.IsActive))
             throw new BusinessRuleException("Cannot delete a department with active employees.");
 
         dept.IsActive = false;
         await _repo.UpdateAsync(dept);
-        await _auditService.LogAsync("Delete", "Department", departmentId.ToString());
+        await _auditService.LogAsync("Delete", AppConstants.EntityNames.Department, departmentId.ToString());
     }
 
     private static DepartmentResponseDto MapToResponse(Department d) => new()
@@ -403,8 +403,8 @@ public class DesignationService : IDesignationService
         if (await _repo.DesignationCodeExistsAsync(dto.DesignationCode.ToUpper()))
             throw new ConflictException($"Designation code '{dto.DesignationCode}' already exists.");
 
-        var dept = await _deptRepo.GetByIdAsync(dto.DepartmentId)
-            ?? throw new NotFoundException("Department", dto.DepartmentId);
+        _ = await _deptRepo.GetByIdAsync(dto.DepartmentId)
+            ?? throw new NotFoundException(AppConstants.EntityNames.Department, dto.DepartmentId);
 
         var desig = new Designation
         {
@@ -416,17 +416,17 @@ public class DesignationService : IDesignationService
         };
 
         await _repo.AddAsync(desig);
-        await _auditService.LogAsync("Create", "Designation", desig.DesignationId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Create", AppConstants.EntityNames.Designation, desig.DesignationId.ToString(), newValues: dto);
         return await GetByIdAsync(desig.DesignationId);
     }
 
     public async Task<DesignationResponseDto> UpdateAsync(int designationId, UpdateDesignationDto dto)
     {
         var desig = await _repo.GetByIdAsync(designationId)
-            ?? throw new NotFoundException("Designation", designationId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Designation, designationId);
 
         _ = await _deptRepo.GetByIdAsync(dto.DepartmentId)
-            ?? throw new NotFoundException("Department", dto.DepartmentId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Department, dto.DepartmentId);
 
         desig.DesignationName = dto.DesignationName;
         desig.DepartmentId    = dto.DepartmentId;
@@ -434,7 +434,7 @@ public class DesignationService : IDesignationService
         desig.IsActive        = dto.IsActive;
 
         await _repo.UpdateAsync(desig);
-        await _auditService.LogAsync("Update", "Designation", designationId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Update", AppConstants.EntityNames.Designation, designationId.ToString(), newValues: dto);
         return await GetByIdAsync(designationId);
     }
 
@@ -442,7 +442,7 @@ public class DesignationService : IDesignationService
     {
         var items = await _repo.GetActiveAsync();
         var desig = items.FirstOrDefault(d => d.DesignationId == designationId)
-            ?? throw new NotFoundException("Designation", designationId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Designation, designationId);
         return MapToResponse(desig);
     }
 
@@ -461,11 +461,11 @@ public class DesignationService : IDesignationService
     public async Task DeleteAsync(int designationId)
     {
         var desig = await _repo.GetByIdAsync(designationId)
-            ?? throw new NotFoundException("Designation", designationId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Designation, designationId);
 
         desig.IsActive = false;
         await _repo.UpdateAsync(desig);
-        await _auditService.LogAsync("Delete", "Designation", designationId.ToString());
+        await _auditService.LogAsync("Delete", AppConstants.EntityNames.Designation, designationId.ToString());
     }
 
     private static DesignationResponseDto MapToResponse(Designation d) => new()

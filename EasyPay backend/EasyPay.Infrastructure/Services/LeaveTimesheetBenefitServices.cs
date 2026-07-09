@@ -1,3 +1,4 @@
+using EasyPay.Core.Constants;
 using EasyPay.Core.DTOs;
 using EasyPay.Core.DTOs.Benefit;
 using EasyPay.Core.DTOs.Leave;
@@ -47,7 +48,7 @@ public class LeaveService : ILeaveService
     public async Task<LeaveRequestResponseDto> SubmitAsync(int employeeId, CreateLeaveRequestDto dto)
     {
         var employee = await _employeeRepo.GetWithDetailsAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
 
         var leaveType = await _leaveTypeRepo.GetByIdAsync(dto.LeaveTypeId)
             ?? throw new NotFoundException("LeaveType", dto.LeaveTypeId);
@@ -76,7 +77,7 @@ public class LeaveService : ILeaveService
             ToDate      = dto.ToDate,
             TotalDays   = totalDays,
             Reason      = dto.Reason,
-            Status      = "Pending",
+            Status      = AppConstants.WorkflowStatus.Pending,
             IsHalfDay   = dto.IsHalfDay,
             HalfDayType = dto.HalfDayType
         };
@@ -122,7 +123,7 @@ public class LeaveService : ILeaveService
             }
         }
 
-        await _auditService.LogAsync("SubmitLeave", "LeaveRequest", leave.LeaveRequestId.ToString(),
+        await _auditService.LogAsync("SubmitLeave", AppConstants.EntityNames.LeaveRequest, leave.LeaveRequestId.ToString(),
             newValues: new { leave.EmployeeId, leave.LeaveTypeId, leave.FromDate, leave.ToDate });
 
         _logger.LogInformation("Leave request submitted by Employee {Id} for {Type}", employeeId, leaveType.LeaveTypeName);
@@ -133,16 +134,16 @@ public class LeaveService : ILeaveService
     public async Task<LeaveRequestResponseDto> ApproveOrRejectAsync(int leaveRequestId, int approverId, ApproveLeaveDto dto)
     {
         var leave = await _leaveRepo.FirstOrDefaultAsync(l => l.LeaveRequestId == leaveRequestId)
-            ?? throw new NotFoundException("LeaveRequest", leaveRequestId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.LeaveRequest, leaveRequestId);
 
-        if (leave.Status != "Pending")
+        if (leave.Status != AppConstants.WorkflowStatus.Pending)
             throw new BusinessRuleException($"Leave request is already '{leave.Status}'.");
 
         var action = dto.Action.Trim();
-        if (action != "Approved" && action != "Rejected")
+        if (action != AppConstants.WorkflowStatus.Approved && action != AppConstants.WorkflowStatus.Rejected)
             throw new ValidationException("Action", "Action must be 'Approved' or 'Rejected'.");
 
-        if (action == "Rejected" && string.IsNullOrWhiteSpace(dto.RejectionReason))
+        if (action == AppConstants.WorkflowStatus.Rejected && string.IsNullOrWhiteSpace(dto.RejectionReason))
             throw new ValidationException("RejectionReason", "Rejection reason is required.");
 
         leave.Status          = action;
@@ -156,13 +157,13 @@ public class LeaveService : ILeaveService
         var employee = await _employeeRepo.GetWithDetailsAsync(leave.EmployeeId);
         if (employee != null)
         {
-            var msg = action == "Approved"
+            var msg = action == AppConstants.WorkflowStatus.Approved
                 ? $"Your leave request ({leave.FromDate:dd MMM} - {leave.ToDate:dd MMM yyyy}) has been approved."
                 : $"Your leave request ({leave.FromDate:dd MMM} - {leave.ToDate:dd MMM yyyy}) was rejected. Reason: {dto.RejectionReason}";
 
             await _notificationService.SendAsync(
                 employee.UserId, $"Leave {action}", msg,
-                action == "Approved" ? "Success" : "Warning",
+                action == AppConstants.WorkflowStatus.Approved ? "Success" : "Warning",
                 "Leave", leaveRequestId);
 
             try
@@ -186,7 +187,7 @@ public class LeaveService : ILeaveService
             }
         }
 
-        await _auditService.LogAsync($"Leave{action}", "LeaveRequest", leaveRequestId.ToString(),
+        await _auditService.LogAsync($"Leave{action}", AppConstants.EntityNames.LeaveRequest, leaveRequestId.ToString(),
             newValues: new { leave.Status, leave.RejectionReason });
 
         return await GetByIdAsync(leaveRequestId);
@@ -196,16 +197,16 @@ public class LeaveService : ILeaveService
     {
         var leave = await _leaveRepo.FirstOrDefaultAsync(l =>
             l.LeaveRequestId == leaveRequestId && l.EmployeeId == employeeId)
-            ?? throw new NotFoundException("LeaveRequest", leaveRequestId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.LeaveRequest, leaveRequestId);
 
-        if (leave.Status == "Approved" && leave.FromDate <= DateOnly.FromDateTime(DateTime.UtcNow))
+        if (leave.Status == AppConstants.WorkflowStatus.Approved && leave.FromDate <= DateOnly.FromDateTime(DateTime.UtcNow))
             throw new BusinessRuleException("Cannot cancel a leave that has already started.");
 
-        leave.Status    = "Cancelled";
+        leave.Status    = AppConstants.WorkflowStatus.Cancelled;
         leave.UpdatedAt = DateTime.UtcNow;
 
         await _leaveRepo.UpdateAsync(leave);
-        await _auditService.LogAsync("CancelLeave", "LeaveRequest", leaveRequestId.ToString());
+        await _auditService.LogAsync("CancelLeave", AppConstants.EntityNames.LeaveRequest, leaveRequestId.ToString());
 
         return await GetByIdAsync(leaveRequestId);
     }
@@ -214,7 +215,7 @@ public class LeaveService : ILeaveService
     {
         var items = await _leaveRepo.FindAsync(l => l.LeaveRequestId == leaveRequestId);
         var leave = items.FirstOrDefault()
-            ?? throw new NotFoundException("LeaveRequest", leaveRequestId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.LeaveRequest, leaveRequestId);
         return MapToResponse(leave);
     }
 
@@ -263,7 +264,7 @@ public class LeaveService : ILeaveService
     public async Task<LeaveCarryForwardDto> ProcessCarryForwardAsync(int employeeId, int fromYear)
     {
         var employee = await _employeeRepo.GetWithDetailsAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
 
         var leaveTypes = await _leaveTypeRepo.GetActiveAsync();
         var items      = new List<LeaveCarryForwardItemDto>();
@@ -285,7 +286,7 @@ public class LeaveService : ILeaveService
             });
         }
 
-        await _auditService.LogAsync("LeaveCarryForward", "Employee", employeeId.ToString(),
+        await _auditService.LogAsync("LeaveCarryForward", AppConstants.EntityNames.Employee, employeeId.ToString(),
             newValues: new { employeeId, fromYear, ItemCount = items.Count });
 
         return new LeaveCarryForwardDto
@@ -340,24 +341,21 @@ public class TimesheetService : ITimesheetService
     private readonly ITimesheetRepository _timesheetRepo;
     private readonly IEmployeeRepository _employeeRepo;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserService _currentUser;
 
     public TimesheetService(
         ITimesheetRepository timesheetRepo,
         IEmployeeRepository employeeRepo,
-        IAuditService auditService,
-        ICurrentUserService currentUser)
+        IAuditService auditService)
     {
         _timesheetRepo = timesheetRepo;
         _employeeRepo  = employeeRepo;
         _auditService  = auditService;
-        _currentUser   = currentUser;
     }
 
     public async Task<TimesheetResponseDto> CreateAsync(int employeeId, CreateTimesheetDto dto)
     {
         _ = await _employeeRepo.GetByIdAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
 
         if (await _timesheetRepo.GetForDateAsync(employeeId, dto.WorkDate) != null)
             throw new ConflictException($"Timesheet already exists for {dto.WorkDate:dd MMM yyyy}.");
@@ -374,21 +372,23 @@ public class TimesheetService : ITimesheetService
             HoursWorked   = dto.HoursWorked,
             OvertimeHours = dto.OvertimeHours,
             Notes         = dto.Notes,
-            Status        = "Pending"
+            Status        = AppConstants.WorkflowStatus.Pending
         };
 
         await _timesheetRepo.AddAsync(timesheet);
-        await _auditService.LogAsync("CreateTimesheet", "Timesheet", timesheet.TimesheetId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Create", AppConstants.EntityNames.Timesheet, timesheet.TimesheetId.ToString(), newValues: dto);
         return await GetByIdAsync(timesheet.TimesheetId);
     }
 
     public async Task<TimesheetResponseDto> UpdateAsync(int timesheetId, int employeeId, UpdateTimesheetDto dto)
     {
-        var timesheet = await _timesheetRepo.FirstOrDefaultAsync(t =>
-            t.TimesheetId == timesheetId && t.EmployeeId == employeeId)
-            ?? throw new NotFoundException("Timesheet", timesheetId);
+        var timesheet = await _timesheetRepo.GetByIdAsync(timesheetId)
+            ?? throw new NotFoundException(AppConstants.EntityNames.Timesheet, timesheetId);
 
-        if (timesheet.Status == "Approved")
+        if (timesheet.EmployeeId != employeeId)
+            throw new UnauthorizedException("You can only update your own timesheets.");
+
+        if (timesheet.Status == AppConstants.WorkflowStatus.Approved)
             throw new BusinessRuleException("Cannot edit an approved timesheet.");
 
         timesheet.CheckIn       = dto.CheckIn;
@@ -399,20 +399,20 @@ public class TimesheetService : ITimesheetService
         timesheet.UpdatedAt     = DateTime.UtcNow;
 
         await _timesheetRepo.UpdateAsync(timesheet);
-        await _auditService.LogAsync("UpdateTimesheet", "Timesheet", timesheetId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Update", AppConstants.EntityNames.Timesheet, timesheetId.ToString(), newValues: dto);
         return await GetByIdAsync(timesheetId);
     }
 
     public async Task<TimesheetResponseDto> ApproveOrRejectAsync(int timesheetId, int approverId, ApproveTimesheetDto dto)
     {
         var timesheet = await _timesheetRepo.GetByIdAsync(timesheetId)
-            ?? throw new NotFoundException("Timesheet", timesheetId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Timesheet, timesheetId);
 
-        if (timesheet.Status != "Pending")
-            throw new BusinessRuleException($"Timesheet is already '{timesheet.Status}'.");
+        if (timesheet.Status != AppConstants.WorkflowStatus.Pending)
+            throw new BusinessRuleException($"Cannot action timesheet that is '{timesheet.Status}'.");
 
         var action = dto.Action.Trim();
-        if (action != "Approved" && action != "Rejected")
+        if (action != AppConstants.WorkflowStatus.Approved && action != AppConstants.WorkflowStatus.Rejected)
             throw new ValidationException("Action", "Action must be 'Approved' or 'Rejected'.");
 
         timesheet.Status       = action;
@@ -421,14 +421,14 @@ public class TimesheetService : ITimesheetService
         timesheet.UpdatedAt    = DateTime.UtcNow;
 
         await _timesheetRepo.UpdateAsync(timesheet);
-        await _auditService.LogAsync($"Timesheet{action}", "Timesheet", timesheetId.ToString());
+        await _auditService.LogAsync($"Timesheet{action}", AppConstants.EntityNames.Timesheet, timesheetId.ToString());
         return await GetByIdAsync(timesheetId);
     }
 
     public async Task<TimesheetResponseDto> GetByIdAsync(int timesheetId)
     {
         var timesheet = await _timesheetRepo.FirstOrDefaultAsync(t => t.TimesheetId == timesheetId)
-            ?? throw new NotFoundException("Timesheet", timesheetId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Timesheet, timesheetId);
         return MapToResponse(timesheet);
     }
 
@@ -452,9 +452,9 @@ public class TimesheetService : ITimesheetService
         foreach (var id in timesheetIds)
         {
             var timesheet = await _timesheetRepo.GetByIdAsync(id);
-            if (timesheet == null || timesheet.Status != "Pending") continue;
+            if (timesheet == null || timesheet.Status != AppConstants.WorkflowStatus.Pending) continue;
 
-            timesheet.Status       = "Approved";
+            timesheet.Status       = AppConstants.WorkflowStatus.Approved;
             timesheet.ApprovedById = approverId == 0 ? null : approverId;
             timesheet.ApprovedAt   = DateTime.UtcNow;
             timesheet.UpdatedAt    = DateTime.UtcNow;
@@ -463,7 +463,7 @@ public class TimesheetService : ITimesheetService
             approved++;
         }
 
-        await _auditService.LogAsync("BulkApproveTimesheets", "Timesheet",
+        await _auditService.LogAsync("BulkApproveTimesheets", AppConstants.EntityNames.Timesheet,
             null, newValues: new { Count = approved, ApprovedBy = approverId });
 
         return approved;
@@ -473,12 +473,11 @@ public class TimesheetService : ITimesheetService
         int employeeId, int year, int month)
     {
         var employee = await _employeeRepo.GetByIdAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
 
         var fromDate = new DateOnly(year, month, 1);
         var toDate   = fromDate.AddMonths(1).AddDays(-1);
 
-        var timesheets = await _timesheetRepo.GetForPayrollPeriodAsync(employeeId, fromDate, toDate);
         var allTs      = (await _timesheetRepo.GetPagedAsync(
             new EasyPay.Core.DTOs.PaginationParams { PageNumber = 1, PageSize = 1000 },
             employeeId, fromDate, toDate)).Items.ToList();
@@ -489,13 +488,13 @@ public class TimesheetService : ITimesheetService
             EmployeeName      = $"{employee.FirstName} {employee.LastName}",
             Year              = year,
             Month             = month,
-            MonthName         = new DateTime(year, month, 1).ToString("MMMM yyyy"),
+            MonthName         = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc).ToString("MMMM yyyy"),
             TotalWorkingDays  = toDate.Day,
             PresentDays       = allTs.Select(t => t.WorkDate).Distinct().Count(),
             TotalHoursWorked  = allTs.Sum(t => t.HoursWorked),
             TotalOvertimeHours= allTs.Sum(t => t.OvertimeHours),
-            PendingTimesheets = allTs.Count(t => t.Status == "Pending"),
-            ApprovedTimesheets= allTs.Count(t => t.Status == "Approved")
+            PendingTimesheets = allTs.Count(t => t.Status == AppConstants.WorkflowStatus.Pending),
+            ApprovedTimesheets= allTs.Count(t => t.Status == AppConstants.WorkflowStatus.Approved)
         };
     }
 
@@ -555,14 +554,14 @@ public class BenefitService : IBenefitService
         };
 
         await _benefitRepo.AddAsync(benefit);
-        await _auditService.LogAsync("Create", "Benefit", benefit.BenefitId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Create", AppConstants.EntityNames.Benefit, benefit.BenefitId.ToString(), newValues: dto);
         return MapToResponse(benefit);
     }
 
     public async Task<BenefitResponseDto> UpdateAsync(int benefitId, CreateBenefitDto dto)
     {
         var benefit = await _benefitRepo.GetByIdAsync(benefitId)
-            ?? throw new NotFoundException("Benefit", benefitId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Benefit, benefitId);
 
         benefit.BenefitName  = dto.BenefitName;
         benefit.BenefitType  = dto.BenefitType;
@@ -572,14 +571,14 @@ public class BenefitService : IBenefitService
         benefit.UpdatedAt    = DateTime.UtcNow;
 
         await _benefitRepo.UpdateAsync(benefit);
-        await _auditService.LogAsync("Update", "Benefit", benefitId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Update", AppConstants.EntityNames.Benefit, benefitId.ToString(), newValues: dto);
         return MapToResponse(benefit);
     }
 
     public async Task<BenefitResponseDto> GetByIdAsync(int benefitId)
     {
         var benefit = await _benefitRepo.GetByIdAsync(benefitId)
-            ?? throw new NotFoundException("Benefit", benefitId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Benefit, benefitId);
         return MapToResponse(benefit);
     }
 
@@ -592,10 +591,10 @@ public class BenefitService : IBenefitService
     public async Task<EmployeeBenefitResponseDto> AssignToEmployeeAsync(int employeeId, AssignBenefitDto dto)
     {
         var employee = await _employeeRepo.GetByIdAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
 
         var benefit = await _benefitRepo.GetByIdAsync(dto.BenefitId)
-            ?? throw new NotFoundException("Benefit", dto.BenefitId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Benefit, dto.BenefitId);
 
         await _empBenefitRepo.DeactivatePreviousAsync(employeeId, dto.BenefitId);
 
@@ -610,7 +609,7 @@ public class BenefitService : IBenefitService
         };
 
         await _empBenefitRepo.AddAsync(empBenefit);
-        await _auditService.LogAsync("AssignBenefit", "EmployeeBenefit",
+        await _auditService.LogAsync("AssignBenefit", AppConstants.EntityNames.EmployeeBenefit,
             empBenefit.EmployeeBenefitId.ToString(), newValues: dto);
 
         return MapToEmpResponse(empBenefit, employee, benefit);
@@ -625,14 +624,14 @@ public class BenefitService : IBenefitService
     public async Task RemoveFromEmployeeAsync(int employeeBenefitId)
     {
         var eb = await _empBenefitRepo.GetByIdAsync(employeeBenefitId)
-            ?? throw new NotFoundException("EmployeeBenefit", employeeBenefitId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.EmployeeBenefit, employeeBenefitId);
 
         eb.IsActive    = false;
         eb.EffectiveTo = DateOnly.FromDateTime(DateTime.UtcNow);
         eb.UpdatedAt   = DateTime.UtcNow;
 
         await _empBenefitRepo.UpdateAsync(eb);
-        await _auditService.LogAsync("RemoveBenefit", "EmployeeBenefit", employeeBenefitId.ToString());
+        await _auditService.LogAsync("RemoveBenefit", AppConstants.EntityNames.EmployeeBenefit, employeeBenefitId.ToString());
     }
 
     private static BenefitResponseDto MapToResponse(Benefit b) => new()

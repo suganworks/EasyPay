@@ -210,9 +210,9 @@ public class AuthService : IAuthService
             throw new UnauthorizedException(AppConstants.ErrorMessages.PasswordResetInvalid);
         }
 
-        if (user.Email != request.Email.ToLower())
+        if (!string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase))
         {
-            _logger.LogWarning("Email mismatch: stored={Stored}, provided={Provided}", user.Email, request.Email.ToLower());
+            _logger.LogWarning("Email mismatch: stored={Stored}, provided={Provided}", user.Email, request.Email);
             throw new UnauthorizedException(AppConstants.ErrorMessages.PasswordResetInvalid);
         }
 

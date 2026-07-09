@@ -1,3 +1,4 @@
+using EasyPay.Core.Constants;
 using EasyPay.Core.DTOs;
 using EasyPay.Core.DTOs.Payroll;
 using EasyPay.Core.Entities;
@@ -42,14 +43,14 @@ public class PayrollPolicyService : IPayrollPolicyService
         };
 
         await _repo.AddAsync(policy);
-        await _auditService.LogAsync("Create", "PayrollPolicy", policy.PolicyId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Create", AppConstants.EntityNames.PayrollPolicy, policy.PolicyId.ToString(), newValues: dto);
         return MapToResponse(policy);
     }
 
     public async Task<PayrollPolicyResponseDto> UpdateAsync(int policyId, CreatePayrollPolicyDto dto)
     {
         var policy = await _repo.GetByIdAsync(policyId)
-            ?? throw new NotFoundException("PayrollPolicy", policyId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.PayrollPolicy, policyId);
 
         policy.PolicyName       = dto.PolicyName;
         policy.EffectiveFrom    = dto.EffectiveFrom;
@@ -67,14 +68,14 @@ public class PayrollPolicyService : IPayrollPolicyService
         policy.Description      = dto.Description;
 
         await _repo.UpdateAsync(policy);
-        await _auditService.LogAsync("Update", "PayrollPolicy", policyId.ToString(), newValues: dto);
+        await _auditService.LogAsync("Update", AppConstants.EntityNames.PayrollPolicy, policyId.ToString(), newValues: dto);
         return MapToResponse(policy);
     }
 
     public async Task<PayrollPolicyResponseDto> GetByIdAsync(int policyId)
     {
         var policy = await _repo.GetByIdAsync(policyId)
-            ?? throw new NotFoundException("PayrollPolicy", policyId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.PayrollPolicy, policyId);
         return MapToResponse(policy);
     }
 
@@ -93,11 +94,11 @@ public class PayrollPolicyService : IPayrollPolicyService
     public async Task DeactivateAsync(int policyId)
     {
         var policy = await _repo.GetByIdAsync(policyId)
-            ?? throw new NotFoundException("PayrollPolicy", policyId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.PayrollPolicy, policyId);
         policy.IsActive    = false;
         policy.EffectiveTo = DateOnly.FromDateTime(DateTime.UtcNow);
         await _repo.UpdateAsync(policy);
-        await _auditService.LogAsync("Deactivate", "PayrollPolicy", policyId.ToString());
+        await _auditService.LogAsync("Deactivate", AppConstants.EntityNames.PayrollPolicy, policyId.ToString());
     }
 
     private static PayrollPolicyResponseDto MapToResponse(PayrollPolicy p) => new()
@@ -144,10 +145,10 @@ public class SalaryStructureService : ISalaryStructureService
     public async Task<SalaryStructureResponseDto> CreateAsync(CreateSalaryStructureDto dto)
     {
         var employee = await _employeeRepo.GetWithDetailsAsync(dto.EmployeeId)
-            ?? throw new NotFoundException("Employee", dto.EmployeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, dto.EmployeeId);
 
         var policy = await _policyRepo.GetByIdAsync(dto.PolicyId)
-            ?? throw new NotFoundException("PayrollPolicy", dto.PolicyId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.PayrollPolicy, dto.PolicyId);
 
         // Deactivate any existing active structure
         await _repo.DeactivatePreviousAsync(dto.EmployeeId);
@@ -185,7 +186,7 @@ public class SalaryStructureService : ISalaryStructureService
     public async Task<IEnumerable<SalaryStructureResponseDto>> GetHistoryForEmployeeAsync(int employeeId)
     {
         _ = await _employeeRepo.GetByIdAsync(employeeId)
-            ?? throw new NotFoundException("Employee", employeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, employeeId);
 
         var history = await _repo.GetHistoryForEmployeeAsync(employeeId);
         return history.Select(s => MapToResponse(s, s.Employee, s.Policy));
@@ -214,6 +215,25 @@ public class SalaryStructureService : ISalaryStructureService
     };
 }
 
+public record PayrollRepositories(
+    IPayrollRepository PayrollRepo,
+    IEmployeeRepository EmployeeRepo,
+    ISalaryStructureRepository SalaryRepo,
+    IPayrollPolicyRepository PolicyRepo,
+    ITimesheetRepository TimesheetRepo,
+    ILeaveRequestRepository LeaveRepo,
+    IEmployeeBenefitRepository EmpBenefitRepo
+);
+
+public record PayrollSupportServices(
+    IAuditService AuditService,
+    ICurrentUserService CurrentUser,
+    INotificationService NotificationService,
+    IUserRepository UserRepo,
+    IEmailService EmailService,
+    ILogger<PayrollService> Logger
+);
+
 // ─── PayrollService ───────────────────────────────────────────────────────────
 public class PayrollService : IPayrollService
 {
@@ -231,42 +251,29 @@ public class PayrollService : IPayrollService
     private readonly IEmailService _emailService;
     private readonly ILogger<PayrollService> _logger;
 
-    public PayrollService(
-        IPayrollRepository payrollRepo,
-        IEmployeeRepository employeeRepo,
-        ISalaryStructureRepository salaryRepo,
-        IPayrollPolicyRepository policyRepo,
-        ITimesheetRepository timesheetRepo,
-        ILeaveRequestRepository leaveRepo,
-        IEmployeeBenefitRepository empBenefitRepo,
-        IAuditService auditService,
-        ICurrentUserService currentUser,
-        INotificationService notificationService,
-        IUserRepository userRepo,
-        IEmailService emailService,
-        ILogger<PayrollService> logger)
+    public PayrollService(PayrollRepositories repos, PayrollSupportServices support)
     {
-        _payrollRepo         = payrollRepo;
-        _employeeRepo        = employeeRepo;
-        _salaryRepo          = salaryRepo;
-        _policyRepo          = policyRepo;
-        _timesheetRepo       = timesheetRepo;
-        _leaveRepo           = leaveRepo;
-        _empBenefitRepo      = empBenefitRepo;
-        _auditService        = auditService;
-        _currentUser         = currentUser;
-        _notificationService = notificationService;
-        _userRepo            = userRepo;
-        _emailService        = emailService;
-        _logger              = logger;
+        _payrollRepo         = repos.PayrollRepo;
+        _employeeRepo        = repos.EmployeeRepo;
+        _salaryRepo          = repos.SalaryRepo;
+        _policyRepo          = repos.PolicyRepo;
+        _timesheetRepo       = repos.TimesheetRepo;
+        _leaveRepo           = repos.LeaveRepo;
+        _empBenefitRepo      = repos.EmpBenefitRepo;
+        _auditService        = support.AuditService;
+        _currentUser         = support.CurrentUser;
+        _notificationService = support.NotificationService;
+        _userRepo            = support.UserRepo;
+        _emailService        = support.EmailService;
+        _logger              = support.Logger;
     }
 
     public async Task<PayrollResponseDto> ProcessAsync(ProcessPayrollDto dto)
     {
         var employee = await _employeeRepo.GetWithDetailsAsync(dto.EmployeeId)
-            ?? throw new NotFoundException("Employee", dto.EmployeeId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Employee, dto.EmployeeId);
 
-        if (!employee.IsActive || employee.EmploymentStatus != "Active")
+        if (!employee.IsActive || employee.EmploymentStatus != AppConstants.WorkflowStatus.Active)
             throw new BusinessRuleException($"Employee {employee.EmployeeCode} is not active.");
 
         if (await _payrollRepo.PayrollExistsForPeriodAsync(
@@ -277,22 +284,17 @@ public class PayrollService : IPayrollService
             ?? throw new BusinessRuleException($"No active salary structure for employee {employee.EmployeeCode}.");
 
         var policy = await _policyRepo.GetByIdAsync(salary.PolicyId)
-            ?? throw new NotFoundException("PayrollPolicy", salary.PolicyId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.PayrollPolicy, salary.PolicyId);
 
         // ─── Calculate attendance ──────────────────────────────────────────────
         var totalOvertimeHours = await _timesheetRepo.GetTotalOvertimeAsync(
             dto.EmployeeId, dto.PayPeriodStart, dto.PayPeriodEnd);
 
-        var leaveDays = await _leaveRepo.GetUsedLeaveDaysAsync(
-            dto.EmployeeId,
-            leaveTypeId: 0, // 0 = all types; we sum below
-            year: dto.PayPeriodStart.Year);
-
         // Paid leave days in period
         var approvedLeaves = await _leaveRepo.GetByEmployeeAndYearAsync(
             dto.EmployeeId, dto.PayPeriodStart.Year);
         var leaveDaysInPeriod = approvedLeaves
-            .Where(l => l.Status == "Approved" &&
+            .Where(l => l.Status == AppConstants.WorkflowStatus.Approved &&
                         l.FromDate >= dto.PayPeriodStart &&
                         l.ToDate   <= dto.PayPeriodEnd)
             .Sum(l => l.TotalDays);
@@ -312,7 +314,7 @@ public class PayrollService : IPayrollService
         var specialEarned  = salary.SpecialAllowance / workingDays * presentDays;
         var otherEarned    = salary.OtherAllowances / workingDays * presentDays;
 
-        var hourlyRate     = salary.BasicSalary / (workingDays * (decimal)policy.WorkingHoursDay);
+        var hourlyRate     = salary.BasicSalary / (workingDays * policy.WorkingHoursDay);
         var overtimePay    = hourlyRate * policy.OvertimeRate * totalOvertimeHours;
 
         // ─── Include Employee Benefits in Gross ───────────────────────────────
@@ -370,7 +372,7 @@ public class PayrollService : IPayrollService
             OtherDeductions   = Math.Round(dto.OtherDeductions, 2),
             TotalDeductions   = Math.Round(totalDeductions, 2),
             NetSalary         = Math.Round(netSalary, 2),
-            Status            = "Pending",
+            Status            = AppConstants.WorkflowStatus.Pending,
             ProcessedById     = _currentUser.UserId,
             ProcessedAt       = DateTime.UtcNow,
             Remarks           = dto.Remarks,
@@ -387,7 +389,7 @@ public class PayrollService : IPayrollService
             $"Your payroll for {dto.PayPeriodStart:MMM yyyy} has been processed. Net Salary: ₹{netSalary:N2}",
             "Info", "Payroll", payroll.PayrollId);
 
-        await _auditService.LogAsync("ProcessPayroll", "Payroll", payroll.PayrollId.ToString(),
+        await _auditService.LogAsync("ProcessPayroll", AppConstants.EntityNames.Payroll, payroll.PayrollId.ToString(),
             newValues: new { payroll.EmployeeId, payroll.NetSalary, payroll.Status });
 
         _logger.LogInformation("Payroll processed for {Code}: Net={Net}",
@@ -407,7 +409,7 @@ public class PayrollService : IPayrollService
         else
         {
             var allActive = await _employeeRepo.FindAsync(
-                e => e.IsActive && e.EmploymentStatus == "Active");
+                e => e.IsActive && e.EmploymentStatus == AppConstants.WorkflowStatus.Active);
             employeeIds = allActive.Select(e => e.EmployeeId);
         }
 
@@ -438,12 +440,12 @@ public class PayrollService : IPayrollService
     public async Task<PayrollResponseDto> ApproveAsync(int payrollId)
     {
         var payroll = await _payrollRepo.GetWithDetailsAsync(payrollId)
-            ?? throw new NotFoundException("Payroll", payrollId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Payroll, payrollId);
 
-        if (payroll.Status != "Pending")
+        if (payroll.Status != AppConstants.WorkflowStatus.Pending)
             throw new BusinessRuleException($"Payroll cannot be approved in '{payroll.Status}' status.");
 
-        payroll.Status       = "Approved";
+        payroll.Status       = AppConstants.WorkflowStatus.Approved;
         payroll.ApprovedById = _currentUser.UserId;
         payroll.ApprovedAt   = DateTime.UtcNow;
         payroll.UpdatedBy    = _currentUser.UserId;
@@ -456,24 +458,24 @@ public class PayrollService : IPayrollService
             $"Your payroll for {payroll.PayPeriodStart:MMM yyyy} has been approved.",
             "Success", "Payroll", payrollId);
 
-        await _auditService.LogAsync("ApprovePayroll", "Payroll", payrollId.ToString());
+        await _auditService.LogAsync("ApprovePayroll", AppConstants.EntityNames.Payroll, payrollId.ToString());
         return MapToResponse(payroll);
     }
 
     public async Task<PayrollResponseDto> RejectAsync(int payrollId, string remarks)
     {
         var payroll = await _payrollRepo.GetWithDetailsAsync(payrollId)
-            ?? throw new NotFoundException("Payroll", payrollId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Payroll, payrollId);
 
-        if (payroll.Status != "Pending")
+        if (payroll.Status != AppConstants.WorkflowStatus.Pending)
             throw new BusinessRuleException($"Payroll cannot be rejected in '{payroll.Status}' status.");
 
-        payroll.Status    = "Cancelled";
+        payroll.Status    = AppConstants.WorkflowStatus.Cancelled;
         payroll.Remarks   = remarks;
         payroll.UpdatedBy = _currentUser.UserId;
 
         await _payrollRepo.UpdateAsync(payroll);
-        await _auditService.LogAsync("RejectPayroll", "Payroll", payrollId.ToString(),
+        await _auditService.LogAsync("RejectPayroll", AppConstants.EntityNames.Payroll, payrollId.ToString(),
             newValues: new { Remarks = remarks });
 
         return MapToResponse(payroll);
@@ -482,7 +484,7 @@ public class PayrollService : IPayrollService
     public async Task<PayrollResponseDto> GetByIdAsync(int payrollId)
     {
         var payroll = await _payrollRepo.GetWithDetailsAsync(payrollId)
-            ?? throw new NotFoundException("Payroll", payrollId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Payroll, payrollId);
         return MapToResponse(payroll);
     }
 
@@ -514,19 +516,19 @@ public class PayrollService : IPayrollService
             TotalDeductions   = list.Sum(p => p.TotalDeductions),
             TotalNetSalary    = list.Sum(p => p.NetSalary),
             PayPeriod         = $"{periodStart:MMM dd} - {periodEnd:MMM dd, yyyy}",
-            Status            = list.Any() ? list.First().Status : "N/A"
+            Status            = list.Any() ? list[0].Status : "N/A"
         };
     }
 
     public async Task<PayrollResponseDto> MarkAsPaidAsync(int payrollId, DateOnly paymentDate)
     {
         var payroll = await _payrollRepo.GetWithDetailsAsync(payrollId)
-            ?? throw new NotFoundException("Payroll", payrollId);
+            ?? throw new NotFoundException(AppConstants.EntityNames.Payroll, payrollId);
 
-        if (payroll.Status != "Approved")
+        if (payroll.Status != AppConstants.WorkflowStatus.Approved)
             throw new BusinessRuleException($"Only approved payrolls can be marked as Paid. Current status: '{payroll.Status}'.");
 
-        payroll.Status      = "Paid";
+        payroll.Status      = AppConstants.WorkflowStatus.Paid;
         payroll.PaymentDate = paymentDate;
         payroll.UpdatedBy   = _currentUser.UserId;
 
@@ -553,7 +555,7 @@ public class PayrollService : IPayrollService
             _logger.LogError(ex, "Failed to send payslip email for PayrollId {Id}", payrollId);
         }
 
-        await _auditService.LogAsync("MarkAsPaid", "Payroll", payrollId.ToString(),
+        await _auditService.LogAsync("MarkAsPaid", AppConstants.EntityNames.Payroll, payrollId.ToString(),
             newValues: new { payroll.Status, PaymentDate = paymentDate });
 
         return MapToResponse(payroll);

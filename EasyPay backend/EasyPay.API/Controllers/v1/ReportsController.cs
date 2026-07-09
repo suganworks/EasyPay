@@ -19,20 +19,17 @@ namespace EasyPay.API.Controllers.v1;
 [Produces("application/json")]
 public class ReportsController : ControllerBase
 {
-    private readonly IPayrollService      _payrollService;
     private readonly IPayrollRepository   _payrollRepo;
     private readonly ILeaveService        _leaveService;
     private readonly IEmployeeRepository  _employeeRepo;
     private readonly IDepartmentRepository _deptRepo;
 
     public ReportsController(
-        IPayrollService      payrollService,
         IPayrollRepository   payrollRepo,
         ILeaveService        leaveService,
         IEmployeeRepository  employeeRepo,
         IDepartmentRepository deptRepo)
     {
-        _payrollService = payrollService;
         _payrollRepo    = payrollRepo;
         _leaveService   = leaveService;
         _employeeRepo   = employeeRepo;

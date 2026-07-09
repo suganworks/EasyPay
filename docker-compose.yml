@@ -7,14 +7,14 @@ services:
     container_name: easypay-sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: "EasyPay@Sql2024!"
+      SA_PASSWORD: "${SQL_PASSWORD}"
       MSSQL_PID: "Developer"
     ports:
       - "1433:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'EasyPay@Sql2024!' -Q 'SELECT 1' -No || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'EasyPay@Sql2024!' -Q 'SELECT 1'"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${SQL_PASSWORD}' -Q 'SELECT 1' -No || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P '${SQL_PASSWORD}' -Q 'SELECT 1'"]
       interval: 15s
       retries: 10
       start_period: 45s
@@ -33,9 +33,9 @@ services:
       ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__DefaultConnection: >
         Server=sqlserver,1433;Database=EasyPayDB;
-        User Id=sa;Password=EasyPay@Sql2024!;
+        User Id=sa;Password=${SQL_PASSWORD};
         TrustServerCertificate=True;
-      JwtSettings__SecretKey: "EasyPay@Hexaware#SecretKey$2024!SuperSecureKeyForJWT256BitMinimum"
+      JwtSettings__SecretKey: "${JWT_SECRET}"
       JwtSettings__Issuer: "EasyPay.API"
       JwtSettings__Audience: "EasyPay.Client"
       JwtSettings__AccessTokenMinutes: "60"
@@ -43,7 +43,7 @@ services:
       SmtpSettings__Host: "smtp.gmail.com"
       SmtpSettings__Port: "587"
       SmtpSettings__Username: "easypay.hexaware@gmail.com"
-      SmtpSettings__Password: "astueyofyghhwhjl"
+      SmtpSettings__Password: "${SMTP_PASSWORD}"
       SmtpSettings__FromEmail: "easypay.hexaware@gmail.com"
       SmtpSettings__FromName: "EasyPay Payroll"
       SmtpSettings__EnableSsl: "true"

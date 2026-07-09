@@ -22,13 +22,13 @@ pipeline {
                     bat 'dotnet new tool-manifest --force || exit 0'
                     bat 'dotnet tool install dotnet-sonarscanner'
                     
-                    bat 'dotnet sonarscanner begin /k:"Easypay" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="sqa_483a409711987bb2812aed130da1e9cdda433e7c"'
+                    bat 'dotnet sonarscanner begin /k:"Easypay" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="sqa_483a409711987bb2812aed130da1e9cdda433e7c" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"'
                     
                     bat 'dotnet restore EasyPay.sln'
                     
                     bat 'dotnet build EasyPay.sln --no-restore'
                     
-                    bat 'dotnet test EasyPay.sln --no-build --verbosity normal'
+                    bat 'dotnet test EasyPay.sln --no-build --verbosity normal --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover'
                     
                     bat 'dotnet sonarscanner end /d:sonar.login="sqa_483a409711987bb2812aed130da1e9cdda433e7c"'
                 }

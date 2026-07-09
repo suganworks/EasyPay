@@ -54,14 +54,20 @@ public class PayrollServiceNUnitTests
             .Setup(r => r.GetActiveForEmployeeAsync(It.IsAny<int>()))
             .ReturnsAsync(new List<EasyPay.Core.Entities.EmployeeBenefit>());
 
-        _sut = new PayrollService(
+        var repos = new PayrollRepositories(
             _payrollRepoMock.Object, _employeeRepoMock.Object,
             _salaryRepoMock.Object,  _policyRepoMock.Object,
             _timesheetRepoMock.Object, _leaveRepoMock.Object,
-            _empBenefitRepoMock.Object,
+            _empBenefitRepoMock.Object
+        );
+
+        var support = new PayrollSupportServices(
             _auditMock.Object, _currentUserMock.Object,
             _notificationMock.Object, _userRepoMock.Object,
-            _emailMock.Object, _loggerMock.Object);
+            _emailMock.Object, _loggerMock.Object
+        );
+
+        _sut = new PayrollService(repos, support);
     }
 
     [Test]

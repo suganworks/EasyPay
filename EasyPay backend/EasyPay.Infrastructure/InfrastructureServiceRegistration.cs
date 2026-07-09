@@ -40,6 +40,10 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IBenefitRepository,           BenefitRepository>();
         services.AddScoped<IEmployeeBenefitRepository,   EmployeeBenefitRepository>();
 
+        // Parameter Objects for PayrollService (S107 refactor)
+        services.AddScoped<PayrollRepositories>();
+        services.AddScoped<PayrollSupportServices>();
+
         // Services
         services.AddScoped<IJwtService,              JwtService>();
         services.AddScoped<IAuthService,             AuthService>();

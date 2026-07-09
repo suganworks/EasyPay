@@ -92,7 +92,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
+        var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:3000";
+        policy.WithOrigins(frontendUrl)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -108,7 +109,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         Log.Information("Applying database migrations...");
-        dbContext.Database.Migrate();
+        await dbContext.Database.MigrateAsync();
         Log.Information("Migrations applied successfully.");
     }
     catch (Exception ex)
@@ -128,6 +129,11 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty; // Opens Swagger at root URL https://localhost:7245
 });
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -137,7 +143,7 @@ app.MapControllers();
 try
 {
     Log.Information("Starting EasyPay API...");
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -146,5 +152,5 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }

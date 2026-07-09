@@ -50,7 +50,7 @@ public class PayrollController : ControllerBase
         [FromQuery] int? month = null)
     {
         var empId = _currentUser.EmployeeId
-            ?? throw new Core.Exceptions.UnauthorizedException("Employee profile not found.");
+            ?? throw new Core.Exceptions.UnauthorizedException(AppConstants.ErrorMessages.EmployeeProfileNotFound);
         var result = await _service.GetPagedAsync(pagination, empId, null, year, month);
         return Ok(result);
     }
@@ -256,7 +256,7 @@ public class SalaryStructuresController : ControllerBase
     public async Task<IActionResult> GetMySalary()
     {
         var empId = _currentUser.EmployeeId
-            ?? throw new Core.Exceptions.UnauthorizedException("Employee profile not found.");
+            ?? throw new Core.Exceptions.UnauthorizedException(AppConstants.ErrorMessages.EmployeeProfileNotFound);
         var result = await _service.GetCurrentForEmployeeAsync(empId);
         return Ok(ApiResponse<SalaryStructureResponseDto>.SuccessResponse(result));
     }

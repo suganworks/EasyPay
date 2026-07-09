@@ -45,7 +45,7 @@ public class LeaveController : ControllerBase
         [FromQuery] string? status = null)
     {
         var empId = _currentUser.EmployeeId
-            ?? throw new UnauthorizedException("Employee profile not found.");
+            ?? throw new UnauthorizedException(AppConstants.ErrorMessages.EmployeeProfileNotFound);
         var result = await _service.GetPagedAsync(pagination, empId, status);
         return Ok(result);
     }
@@ -59,7 +59,7 @@ public class LeaveController : ControllerBase
         if (managerId == 0)
             return Ok(ApiResponse<IEnumerable<LeaveRequestResponseDto>>.SuccessResponse(
                 Enumerable.Empty<LeaveRequestResponseDto>(),
-                "No employee profile linked to this account."));
+                AppConstants.ErrorMessages.EmployeeProfileNotFound));
         var result = await _service.GetPendingForManagerAsync(managerId);
         return Ok(ApiResponse<IEnumerable<LeaveRequestResponseDto>>.SuccessResponse(result));
     }
@@ -83,7 +83,7 @@ public class LeaveController : ControllerBase
     public async Task<IActionResult> GetMyBalance([FromQuery] int? year = null)
     {
         var empId = _currentUser.EmployeeId
-            ?? throw new UnauthorizedException("Employee profile not found.");
+            ?? throw new UnauthorizedException(AppConstants.ErrorMessages.EmployeeProfileNotFound);
         var targetYear = year ?? DateTime.UtcNow.Year;
         var result = await _service.GetBalancesAsync(empId, targetYear);
         return Ok(ApiResponse<IEnumerable<LeaveBalanceDto>>.SuccessResponse(result));
@@ -108,7 +108,7 @@ public class LeaveController : ControllerBase
             return BadRequest(ApiResponse.FailureResponse(AppConstants.ErrorMessages.ValidationFailed));
 
         var empId = _currentUser.EmployeeId
-            ?? throw new UnauthorizedException("Employee profile not found.");
+            ?? throw new UnauthorizedException(AppConstants.ErrorMessages.EmployeeProfileNotFound);
 
         var result = await _service.SubmitAsync(empId, dto);
         return CreatedAtAction(nameof(GetById), new { id = result.LeaveRequestId },
@@ -136,7 +136,7 @@ public class LeaveController : ControllerBase
     public async Task<IActionResult> Cancel(int id)
     {
         var empId = _currentUser.EmployeeId
-            ?? throw new UnauthorizedException("Employee profile not found.");
+            ?? throw new UnauthorizedException(AppConstants.ErrorMessages.EmployeeProfileNotFound);
 
         var result = await _service.CancelAsync(id, empId);
         return Ok(ApiResponse<LeaveRequestResponseDto>.SuccessResponse(result, "Leave request cancelled."));

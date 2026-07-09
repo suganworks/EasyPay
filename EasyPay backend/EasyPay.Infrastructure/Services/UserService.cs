@@ -3,7 +3,6 @@ using EasyPay.Core.DTOs.Auth;
 using EasyPay.Core.Exceptions;
 using EasyPay.Core.Interfaces.Repositories;
 using EasyPay.Core.Interfaces.Services;
-using Microsoft.Extensions.Logging;
 using System.Linq;
 
 namespace EasyPay.Infrastructure.Services;
@@ -12,19 +11,13 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserService _currentUser;
-    private readonly ILogger<UserService> _logger;
 
     public UserService(
         IUserRepository userRepository,
-        IAuditService auditService,
-        ICurrentUserService currentUser,
-        ILogger<UserService> logger)
+        IAuditService auditService)
     {
         _userRepository = userRepository;
         _auditService = auditService;
-        _currentUser = currentUser;
-        _logger = logger;
     }
 
     public async Task<PagedResponse<UserInfoDto>> GetPagedUsersAsync(PaginationParams pagination, string? role = null, bool? isActive = null)

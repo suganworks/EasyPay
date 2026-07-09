@@ -1,3 +1,4 @@
+using EasyPay.Core.Constants;
 using EasyPay.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -79,7 +80,7 @@ public class EasyPayDbContext : DbContext
             e.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(20);
             e.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
             e.Property(x => x.LastName).IsRequired().HasMaxLength(100);
-            e.Property(x => x.TaxWithholding).HasColumnType("decimal(5,2)");
+            e.Property(x => x.TaxWithholding).HasColumnType(AppConstants.DecimalColumnTypes.Rate);
             e.HasIndex(x => x.EmployeeCode).IsUnique();
             e.Ignore(x => x.FullName);
 
@@ -109,27 +110,27 @@ public class EasyPayDbContext : DbContext
         {
             e.HasKey(x => x.PolicyId);
             e.Property(x => x.PolicyName).IsRequired().HasMaxLength(100);
-            e.Property(x => x.OvertimeRate).HasColumnType("decimal(5,2)");
-            e.Property(x => x.PfEmployeeRate).HasColumnType("decimal(5,2)");
-            e.Property(x => x.PfEmployerRate).HasColumnType("decimal(5,2)");
-            e.Property(x => x.EsiEmployeeRate).HasColumnType("decimal(5,2)");
-            e.Property(x => x.EsiEmployerRate).HasColumnType("decimal(5,2)");
-            e.Property(x => x.ProfessionalTax).HasColumnType("decimal(10,2)");
-            e.Property(x => x.GratuityRate).HasColumnType("decimal(5,2)");
-            e.Property(x => x.WorkingHoursDay).HasColumnType("decimal(4,2)");
+            e.Property(x => x.OvertimeRate).HasColumnType(AppConstants.DecimalColumnTypes.Rate);
+            e.Property(x => x.PfEmployeeRate).HasColumnType(AppConstants.DecimalColumnTypes.Rate);
+            e.Property(x => x.PfEmployerRate).HasColumnType(AppConstants.DecimalColumnTypes.Rate);
+            e.Property(x => x.EsiEmployeeRate).HasColumnType(AppConstants.DecimalColumnTypes.Rate);
+            e.Property(x => x.EsiEmployerRate).HasColumnType(AppConstants.DecimalColumnTypes.Rate);
+            e.Property(x => x.ProfessionalTax).HasColumnType(AppConstants.DecimalColumnTypes.Tax);
+            e.Property(x => x.GratuityRate).HasColumnType(AppConstants.DecimalColumnTypes.Rate);
+            e.Property(x => x.WorkingHoursDay).HasColumnType(AppConstants.DecimalColumnTypes.HoursDay);
         });
 
         // ── SalaryStructure ───────────────────────────────────────────
         modelBuilder.Entity<SalaryStructure>(e =>
         {
             e.HasKey(x => x.SalaryStructureId);
-            e.Property(x => x.BasicSalary).HasColumnType("decimal(18,2)");
-            e.Property(x => x.HRA).HasColumnType("decimal(18,2)");
-            e.Property(x => x.ConveyanceAllowance).HasColumnType("decimal(18,2)");
-            e.Property(x => x.MedicalAllowance).HasColumnType("decimal(18,2)");
-            e.Property(x => x.SpecialAllowance).HasColumnType("decimal(18,2)");
-            e.Property(x => x.LTA).HasColumnType("decimal(18,2)");
-            e.Property(x => x.OtherAllowances).HasColumnType("decimal(18,2)");
+            e.Property(x => x.BasicSalary).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.HRA).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.ConveyanceAllowance).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.MedicalAllowance).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.SpecialAllowance).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.LTA).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.OtherAllowances).HasColumnType(AppConstants.DecimalColumnTypes.Money);
             e.Ignore(x => x.GrossSalary);
 
             e.HasOne(x => x.Employee)
@@ -147,25 +148,25 @@ public class EasyPayDbContext : DbContext
         modelBuilder.Entity<Payroll>(e =>
         {
             e.HasKey(x => x.PayrollId);
-            e.Property(x => x.BasicSalary).HasColumnType("decimal(18,2)");
-            e.Property(x => x.HRA).HasColumnType("decimal(18,2)");
-            e.Property(x => x.ConveyanceAllow).HasColumnType("decimal(18,2)");
-            e.Property(x => x.MedicalAllow).HasColumnType("decimal(18,2)");
-            e.Property(x => x.SpecialAllow).HasColumnType("decimal(18,2)");
-            e.Property(x => x.OtherAllowances).HasColumnType("decimal(18,2)");
-            e.Property(x => x.OvertimePay).HasColumnType("decimal(18,2)");
-            e.Property(x => x.BonusAmount).HasColumnType("decimal(18,2)");
-            e.Property(x => x.GrossEarnings).HasColumnType("decimal(18,2)");
-            e.Property(x => x.PfEmployee).HasColumnType("decimal(18,2)");
-            e.Property(x => x.PfEmployer).HasColumnType("decimal(18,2)");
-            e.Property(x => x.EsiEmployee).HasColumnType("decimal(18,2)");
-            e.Property(x => x.EsiEmployer).HasColumnType("decimal(18,2)");
-            e.Property(x => x.ProfessionalTax).HasColumnType("decimal(18,2)");
-            e.Property(x => x.IncomeTax).HasColumnType("decimal(18,2)");
-            e.Property(x => x.OtherDeductions).HasColumnType("decimal(18,2)");
-            e.Property(x => x.TotalDeductions).HasColumnType("decimal(18,2)");
-            e.Property(x => x.NetSalary).HasColumnType("decimal(18,2)");
-            e.Property(x => x.OvertimeHours).HasColumnType("decimal(8,2)");
+            e.Property(x => x.BasicSalary).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.HRA).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.ConveyanceAllow).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.MedicalAllow).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.SpecialAllow).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.OtherAllowances).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.OvertimePay).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.BonusAmount).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.GrossEarnings).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.PfEmployee).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.PfEmployer).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.EsiEmployee).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.EsiEmployer).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.ProfessionalTax).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.IncomeTax).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.OtherDeductions).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.TotalDeductions).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.NetSalary).HasColumnType(AppConstants.DecimalColumnTypes.Money);
+            e.Property(x => x.OvertimeHours).HasColumnType(AppConstants.DecimalColumnTypes.Hours);
 
             e.HasOne(x => x.Employee)
              .WithMany(emp => emp.Payrolls)
@@ -189,14 +190,14 @@ public class EasyPayDbContext : DbContext
             e.HasKey(x => x.BenefitId);
             e.Property(x => x.BenefitCode).IsRequired().HasMaxLength(20);
             e.HasIndex(x => x.BenefitCode).IsUnique();
-            e.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.Amount).HasColumnType(AppConstants.DecimalColumnTypes.Money);
         });
 
         // ── EmployeeBenefit ───────────────────────────────────────────
         modelBuilder.Entity<EmployeeBenefit>(e =>
         {
             e.HasKey(x => x.EmployeeBenefitId);
-            e.Property(x => x.OverrideAmount).HasColumnType("decimal(18,2)");
+            e.Property(x => x.OverrideAmount).HasColumnType(AppConstants.DecimalColumnTypes.Money);
 
             e.HasOne(x => x.Employee)
              .WithMany(emp => emp.EmployeeBenefits)
@@ -244,8 +245,8 @@ public class EasyPayDbContext : DbContext
         modelBuilder.Entity<Timesheet>(e =>
         {
             e.HasKey(x => x.TimesheetId);
-            e.Property(x => x.HoursWorked).HasColumnType("decimal(5,2)");
-            e.Property(x => x.OvertimeHours).HasColumnType("decimal(5,2)");
+            e.Property(x => x.HoursWorked).HasColumnType(AppConstants.DecimalColumnTypes.Rate);
+            e.Property(x => x.OvertimeHours).HasColumnType(AppConstants.DecimalColumnTypes.Rate);
             e.HasIndex(x => new { x.EmployeeId, x.WorkDate }).IsUnique();
 
             e.HasOne(x => x.Employee)

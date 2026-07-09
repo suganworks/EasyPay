@@ -19,16 +19,13 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly ICurrentUserService _currentUserService;
-    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         IAuthService authService,
-        ICurrentUserService currentUserService,
-        ILogger<AuthController> logger)
+        ICurrentUserService currentUserService)
     {
         _authService        = authService;
         _currentUserService = currentUserService;
-        _logger             = logger;
     }
 
     /// <summary>Register a new user.</summary>

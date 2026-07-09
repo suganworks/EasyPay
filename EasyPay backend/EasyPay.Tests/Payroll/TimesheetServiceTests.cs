@@ -16,7 +16,6 @@ public class TimesheetServiceTests
     private Mock<ITimesheetRepository> _timesheetRepoMock;
     private Mock<IEmployeeRepository>  _employeeRepoMock;
     private Mock<IAuditService>        _auditMock;
-    private Mock<ICurrentUserService>  _currentUserMock;
     private TimesheetService           _sut;
 
     [SetUp]
@@ -25,14 +24,11 @@ public class TimesheetServiceTests
         _timesheetRepoMock = new Mock<ITimesheetRepository>();
         _employeeRepoMock  = new Mock<IEmployeeRepository>();
         _auditMock         = new Mock<IAuditService>();
-        _currentUserMock   = new Mock<ICurrentUserService>();
-        _currentUserMock.Setup(c => c.UserId).Returns(1);
 
         _sut = new TimesheetService(
             _timesheetRepoMock.Object,
             _employeeRepoMock.Object,
-            _auditMock.Object,
-            _currentUserMock.Object);
+            _auditMock.Object);
     }
 
     [Test]
@@ -109,7 +105,7 @@ public class TimesheetServiceTests
 
         Func<Task> act = () => _sut.ApproveOrRejectAsync(1, 2, new ApproveTimesheetDto { Action = "Approved" });
 
-        await act.Should().ThrowAsync<BusinessRuleException>().WithMessage("*already*");
+        await act.Should().ThrowAsync<BusinessRuleException>().WithMessage("*Cannot action*");
     }
 
     [Test]
@@ -157,8 +153,7 @@ public class TimesheetServiceTests
     public async Task UpdateAsync_WhenApproved_ThrowsBusinessRuleException()
     {
         var timesheet = new Timesheet { TimesheetId = 1, EmployeeId = 1, Status = "Approved" };
-        _timesheetRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Timesheet, bool>>>()))
-            .ReturnsAsync(timesheet);
+        _timesheetRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(timesheet);
 
         Func<Task> act = () => _sut.UpdateAsync(1, 1, new UpdateTimesheetDto { HoursWorked = 8 });
 
