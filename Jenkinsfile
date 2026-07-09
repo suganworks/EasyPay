@@ -19,9 +19,8 @@ pipeline {
             steps {
                 echo 'Running SonarQube Analysis and .NET Tests...'
                 dir('EasyPay backend') {
-                    
-                    bat 'dotnet tool install --global dotnet-sonarscanner || exit 0'
-                    
+                    bat 'dotnet new tool-manifest --force || exit 0'
+                    bat 'dotnet tool install dotnet-sonarscanner'
                     
                     bat 'dotnet sonarscanner begin /k:"EasyPay" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="sqa_483a409711987bb2812aed130da1e9cdda433e7c"'
                     
