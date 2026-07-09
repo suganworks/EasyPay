@@ -1,6 +1,8 @@
 using EasyPay.API.Extensions;
 using EasyPay.API.Middleware;
 using EasyPay.Infrastructure;
+using EasyPay.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
@@ -98,6 +100,22 @@ builder.Services.AddCors(options =>
 
 // ─── App Pipeline ──────────────────────────────────────────────────────────
 var app = builder.Build();
+
+// ─── Apply Migrations & Seed Database ───────────────────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<EasyPayDbContext>();
+    try
+    {
+        Log.Information("Applying database migrations...");
+        dbContext.Database.Migrate();
+        Log.Information("Migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Error applying migrations, continuing...");
+    }
+}
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseSerilogRequestLogging();
