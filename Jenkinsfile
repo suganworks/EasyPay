@@ -4,6 +4,9 @@ pipeline {
     environment {
         ASPNETCORE_ENVIRONMENT = 'Development'
         COMPOSE_PROJECT_NAME = 'easypay'
+        SQL_PASSWORD = 'Easypay@123!'
+        JWT_SECRET = 'EasyPay@Hexaware#SecretKey$2024!SuperSecureKeyForJWT256BitMinimum'
+        SMTP_PASSWORD = 'astueyofyghhwhjl'
     }
 
     stages {
