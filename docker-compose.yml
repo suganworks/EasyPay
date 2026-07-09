@@ -1,0 +1,72 @@
+
+services:
+
+  # ── SQL Server ──────────────────────────────────────────────────────────────
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: easypay-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "EasyPay@Sql2024!"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'EasyPay@Sql2024!' -Q 'SELECT 1' -No || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'EasyPay@Sql2024!' -Q 'SELECT 1'"]
+      interval: 15s
+      retries: 10
+      start_period: 45s
+      timeout: 10s
+
+  # ── Backend API ─────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./EasyPay backend
+      dockerfile: Dockerfile
+    container_name: easypay-api
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: >
+        Server=sqlserver,1433;Database=EasyPayDB;
+        User Id=sa;Password=EasyPay@Sql2024!;
+        TrustServerCertificate=True;
+      JwtSettings__SecretKey: "EasyPay@Hexaware#SecretKey$2024!SuperSecureKeyForJWT256BitMinimum"
+      JwtSettings__Issuer: "EasyPay.API"
+      JwtSettings__Audience: "EasyPay.Client"
+      JwtSettings__AccessTokenMinutes: "60"
+      JwtSettings__RefreshTokenDays: "7"
+      SmtpSettings__Host: "smtp.gmail.com"
+      SmtpSettings__Port: "587"
+      SmtpSettings__Username: "easypay.hexaware@gmail.com"
+      SmtpSettings__Password: "astueyofyghhwhjl"
+      SmtpSettings__FromEmail: "easypay.hexaware@gmail.com"
+      SmtpSettings__FromName: "EasyPay Payroll"
+      SmtpSettings__EnableSsl: "true"
+      AppSettings__FrontendUrl: "http://localhost:3000"
+      Cors__AllowedOrigins__0: "http://localhost:3000"
+      Cors__AllowedOrigins__1: "http://localhost:5173"
+      Cors__AllowedOrigins__2: "http://frontend"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./EasyPay frontend
+      dockerfile: Dockerfile
+    container_name: easypay-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
