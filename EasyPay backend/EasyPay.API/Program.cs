@@ -5,6 +5,7 @@ using EasyPay.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using EasyPay.Core.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,10 +38,10 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 // Authorization policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly",        p => p.RequireRole("Admin"));
-    options.AddPolicy("HROrAdmin",        p => p.RequireRole("Admin", "HRManager"));
-    options.AddPolicy("PayrollAccess",    p => p.RequireRole("Admin", "HRManager", "PayrollProcessor"));
-    options.AddPolicy("ManagerAccess",    p => p.RequireRole("Admin", "HRManager", "Manager"));
+    options.AddPolicy("AdminOnly",        p => p.RequireRole(AppConstants.Roles.Admin));
+    options.AddPolicy("HROrAdmin",        p => p.RequireRole(AppConstants.Roles.Admin, AppConstants.Roles.HRManager));
+    options.AddPolicy("PayrollAccess",    p => p.RequireRole(AppConstants.Roles.Admin, AppConstants.Roles.HRManager, AppConstants.Roles.PayrollProcessor));
+    options.AddPolicy("ManagerAccess",    p => p.RequireRole(AppConstants.Roles.Admin, AppConstants.Roles.HRManager, AppConstants.Roles.Manager));
     options.AddPolicy("AllAuthenticated", p => p.RequireAuthenticatedUser());
 });
 
@@ -148,7 +149,7 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "EasyPay API failed to start.");
-    throw;
+    throw new InvalidOperationException("EasyPay API failed to start due to a critical error.", ex);
 }
 finally
 {

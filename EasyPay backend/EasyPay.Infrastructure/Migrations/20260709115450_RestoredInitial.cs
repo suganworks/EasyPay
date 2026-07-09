@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -551,23 +551,29 @@ namespace EasyPay.Infrastructure.Migrations
                     { 5, new DateTime(2026, 7, 9, 11, 54, 47, 495, DateTimeKind.Utc).AddTicks(4929), "Team Manager / Supervisor", true, "Manager", new DateTime(2026, 7, 9, 11, 54, 47, 495, DateTimeKind.Utc).AddTicks(4929) }
                 });
 
-            // User seed data with BCrypt hash for password "EasyPay@123!"
-            string passwordHash = "$2a$11$hqJV3PIRZMnNX3z9X5.FLeTgRJMV7vOERQ3YCvjK5uVVLxzKF.bGO";
+            // User seed data with BCrypt hash
+            string pwdHash = "$2a$11$hqJV3PIRZMnNX3z9X5.FLeTgRJMV7vOERQ3YCvjK5uVVLxzKF.bGO";
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "UserId", "Username", "Email", "PasswordHash", "RoleId", "IsActive", "IsEmailVerified", "FailedLoginAttempts", "CreatedAt", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, "admin", "admin@easypay.com", passwordHash, 1, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
-                    { 2, "amitabh.bachchan", "grootthe38@gmail.com", passwordHash, 2, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
-                    { 3, "rajinikanth.superstar", "rajinikanth@easypay.in", passwordHash, 3, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
-                    { 4, "aamir.khan", "aamir.khan@easypay.in", passwordHash, 5, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
-                    { 5, "deepika.padukone", "deepika.padukone@easypay.in", passwordHash, 5, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
-                    { 6, "ranveer.singh", "ranveer.singh@easypay.in", passwordHash, 5, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
-                    { 7, "priyanka.chopra", "priyanka.chopra@easypay.in", passwordHash, 5, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
-                    { 8, "sugan.prabha", "suganprabhakaran196@gmail.com", passwordHash, 4, true, true, 0, new DateTime(2024, 7, 15, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 15, 0, 0, 0, DateTimeKind.Utc) },
-                    { 9, "shah.rukh.khan", "shahrukhkhan@easypay.in", passwordHash, 4, true, true, 0, new DateTime(2024, 7, 15, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 15, 0, 0, 0, DateTimeKind.Utc) },
-                    { 10, "katrina.kaif", "katrina.kaif@easypay.in", passwordHash, 4, true, true, 0, new DateTime(2024, 7, 15, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 15, 0, 0, 0, DateTimeKind.Utc) }
+                    { 1, "admin", "admin@easypay.com", pwdHash, 1, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 2, "amitabh.bachchan", "grootthe38@gmail.com", pwdHash, 2, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 3, "rajinikanth.superstar", "rajinikanth@easypay.in", pwdHash, 3, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 4, "aamir.khan", "aamir.khan@easypay.in", pwdHash, 5, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 5, "deepika.padukone", "deepika.padukone@easypay.in", pwdHash, 5, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 6, "shahrukh.khan", "shahrukh.khan@easypay.in", pwdHash, 5, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 7, "sachin.tendulkar", "sachin.tendulkar@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 8, "virat.kohli", "virat.kohli@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 9, "ms.dhoni", "ms.dhoni@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 10, "rohit.sharma", "rohit.sharma@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 11, "priyanka.chopra", "priyanka.chopra@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 12, "alia.bhatt", "alia.bhatt@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 13, "ar.rahman", "ar.rahman@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 14, "shreya.ghoshal", "shreya.ghoshal@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 15, "ratan.tata", "ratan.tata@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) },
+                    { 16, "sundar.pichai", "sundar.pichai@easypay.in", pwdHash, 4, true, true, 0, new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2024, 7, 1, 0, 0, 0, DateTimeKind.Utc) }
                 });
 
             migrationBuilder.CreateIndex(

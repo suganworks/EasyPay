@@ -44,6 +44,9 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<PayrollRepositories>();
         services.AddScoped<PayrollSupportServices>();
 
+        // Shared Support Services for Employee/Leave Services
+        services.AddScoped<SharedSupportServices>();
+
         // Services
         services.AddScoped<IJwtService,              JwtService>();
         services.AddScoped<IAuthService,             AuthService>();

@@ -18,30 +18,23 @@ public class LeaveService : ILeaveService
     private readonly IEmployeeRepository _employeeRepo;
     private readonly IAuditService _auditService;
     private readonly INotificationService _notificationService;
-    private readonly ICurrentUserService _currentUser;
     private readonly IUserRepository _userRepo;
     private readonly IEmailService _emailService;
     private readonly ILogger<LeaveService> _logger;
-
     public LeaveService(
         ILeaveRequestRepository leaveRepo,
         ILeaveTypeRepository leaveTypeRepo,
         IEmployeeRepository employeeRepo,
-        IAuditService auditService,
-        INotificationService notificationService,
-        ICurrentUserService currentUser,
-        IUserRepository userRepo,
-        IEmailService emailService,
+        SharedSupportServices support,
         ILogger<LeaveService> logger)
     {
         _leaveRepo           = leaveRepo;
         _leaveTypeRepo       = leaveTypeRepo;
         _employeeRepo        = employeeRepo;
-        _auditService        = auditService;
-        _notificationService = notificationService;
-        _currentUser         = currentUser;
-        _userRepo            = userRepo;
-        _emailService        = emailService;
+        _auditService        = support.AuditService;
+        _notificationService = support.NotificationService;
+        _userRepo            = support.UserRepo;
+        _emailService        = support.EmailService;
         _logger              = logger;
     }
 

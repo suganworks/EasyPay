@@ -108,7 +108,7 @@ public class EmailService : IEmailService
             {
                 Port        = int.TryParse(portStr, out var p) ? p : 587,
                 Credentials = new NetworkCredential(username, password),
-                EnableSsl   = enableSsl
+                EnableSsl   = true
             };
 
             var message = new MailMessage

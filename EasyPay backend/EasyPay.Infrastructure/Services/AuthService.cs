@@ -185,7 +185,7 @@ public class AuthService : IAuthService
         await _userRepository.UpdateResetTokenAsync(user.UserId, token, expiry);
 
         // Send actual reset email (Link)
-        var frontendUrl = _configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173";
+        var frontendUrl = _configuration["AppSettings:FrontendUrl"] ?? string.Empty;
         var resetLink   = $"{frontendUrl}/reset-password?email={Uri.EscapeDataString(user.Email)}&token={token}";
         await _emailService.SendPasswordResetEmailAsync(user.Email, token, resetLink);
 
@@ -202,7 +202,6 @@ public class AuthService : IAuthService
         var tokenUpper = request.Token?.ToUpperInvariant() ?? string.Empty;
         var user = await _userRepository.GetByPasswordResetTokenAsync(tokenUpper);
 
-        _logger.LogInformation("Token lookup result: user found = {Found}", user != null);
 
         if (user == null)
         {

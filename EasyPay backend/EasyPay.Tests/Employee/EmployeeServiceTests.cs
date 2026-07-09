@@ -39,11 +39,15 @@ public class EmployeeServiceNUnitTests
 
         _currentUserMock.Setup(c => c.UserId).Returns(1);
 
-        _sut = new EmployeeService(
-            _employeeRepoMock.Object, _userRepoMock.Object,
-            _deptRepoMock.Object, _desigRepoMock.Object,
+        var support = new SharedSupportServices(
             _auditMock.Object, _currentUserMock.Object,
-            _emailMock.Object, _loggerMock.Object);
+            _emailMock.Object, new Mock<INotificationService>().Object,
+            _userRepoMock.Object
+        );
+
+        _sut = new EmployeeService(
+            _employeeRepoMock.Object, _deptRepoMock.Object,
+            _desigRepoMock.Object, support, _loggerMock.Object);
     }
 
     [Test]

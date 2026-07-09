@@ -40,11 +40,15 @@ public class LeaveServiceNUnitTests
 
         _currentUserMock.Setup(c => c.UserId).Returns(1);
 
+        var support = new SharedSupportServices(
+            _auditMock.Object, _currentUserMock.Object,
+            _emailMock.Object, _notificationMock.Object,
+            _userRepoMock.Object
+        );
+
         _sut = new LeaveService(
             _leaveRepoMock.Object, _leaveTypeRepoMock.Object,
-            _employeeRepoMock.Object, _auditMock.Object,
-            _notificationMock.Object, _currentUserMock.Object,
-            _userRepoMock.Object, _emailMock.Object, _loggerMock.Object);
+            _employeeRepoMock.Object, support, _loggerMock.Object);
     }
 
     [Test]

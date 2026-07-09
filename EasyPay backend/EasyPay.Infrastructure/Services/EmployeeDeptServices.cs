@@ -26,21 +26,18 @@ public class EmployeeService : IEmployeeService
 
     public EmployeeService(
         IEmployeeRepository employeeRepo,
-        IUserRepository userRepo,
         IDepartmentRepository deptRepo,
         IDesignationRepository desigRepo,
-        IAuditService auditService,
-        ICurrentUserService currentUser,
-        IEmailService emailService,
+        SharedSupportServices support,
         ILogger<EmployeeService> logger)
     {
         _employeeRepo  = employeeRepo;
-        _userRepo      = userRepo;
+        _userRepo      = support.UserRepo;
         _deptRepo      = deptRepo;
         _desigRepo     = desigRepo;
-        _auditService  = auditService;
-        _currentUser   = currentUser;
-        _emailService  = emailService;
+        _auditService  = support.AuditService;
+        _currentUser   = support.CurrentUser;
+        _emailService  = support.EmailService;
         _logger        = logger;
     }
 
