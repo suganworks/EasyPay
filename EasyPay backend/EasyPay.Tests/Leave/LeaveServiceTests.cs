@@ -20,6 +20,8 @@ public class LeaveServiceNUnitTests
     private Mock<IAuditService>           _auditMock;
     private Mock<INotificationService>    _notificationMock;
     private Mock<ICurrentUserService>     _currentUserMock;
+    private Mock<IUserRepository>         _userRepoMock;
+    private Mock<IEmailService>           _emailMock;
     private Mock<ILogger<LeaveService>>   _loggerMock;
     private LeaveService                  _sut;
 
@@ -32,6 +34,8 @@ public class LeaveServiceNUnitTests
         _auditMock         = new Mock<IAuditService>();
         _notificationMock  = new Mock<INotificationService>();
         _currentUserMock   = new Mock<ICurrentUserService>();
+        _userRepoMock      = new Mock<IUserRepository>();
+        _emailMock         = new Mock<IEmailService>();
         _loggerMock        = new Mock<ILogger<LeaveService>>();
 
         _currentUserMock.Setup(c => c.UserId).Returns(1);
@@ -39,7 +43,8 @@ public class LeaveServiceNUnitTests
         _sut = new LeaveService(
             _leaveRepoMock.Object, _leaveTypeRepoMock.Object,
             _employeeRepoMock.Object, _auditMock.Object,
-            _notificationMock.Object, _currentUserMock.Object, _loggerMock.Object);
+            _notificationMock.Object, _currentUserMock.Object,
+            _userRepoMock.Object, _emailMock.Object, _loggerMock.Object);
     }
 
     [Test]

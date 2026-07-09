@@ -25,6 +25,8 @@ public class PayrollServiceNUnitTests
     private Mock<IAuditService>              _auditMock;
     private Mock<ICurrentUserService>        _currentUserMock;
     private Mock<INotificationService>       _notificationMock;
+    private Mock<IUserRepository>            _userRepoMock;
+    private Mock<IEmailService>              _emailMock;
     private Mock<ILogger<PayrollService>>    _loggerMock;
     private PayrollService                   _sut;
 
@@ -41,6 +43,8 @@ public class PayrollServiceNUnitTests
         _auditMock          = new Mock<IAuditService>();
         _currentUserMock    = new Mock<ICurrentUserService>();
         _notificationMock   = new Mock<INotificationService>();
+        _userRepoMock       = new Mock<IUserRepository>();
+        _emailMock          = new Mock<IEmailService>();
         _loggerMock         = new Mock<ILogger<PayrollService>>();
 
         _currentUserMock.Setup(c => c.UserId).Returns(1);
@@ -56,7 +60,8 @@ public class PayrollServiceNUnitTests
             _timesheetRepoMock.Object, _leaveRepoMock.Object,
             _empBenefitRepoMock.Object,
             _auditMock.Object, _currentUserMock.Object,
-            _notificationMock.Object, _loggerMock.Object);
+            _notificationMock.Object, _userRepoMock.Object,
+            _emailMock.Object, _loggerMock.Object);
     }
 
     [Test]

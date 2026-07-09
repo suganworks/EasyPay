@@ -21,6 +21,7 @@ public class EmployeeServiceNUnitTests
     private Mock<IDesignationRepository> _desigRepoMock;
     private Mock<IAuditService>          _auditMock;
     private Mock<ICurrentUserService>    _currentUserMock;
+    private Mock<IEmailService>          _emailMock;
     private Mock<ILogger<EmployeeService>> _loggerMock;
     private EmployeeService              _sut;
 
@@ -33,6 +34,7 @@ public class EmployeeServiceNUnitTests
         _desigRepoMock    = new Mock<IDesignationRepository>();
         _auditMock        = new Mock<IAuditService>();
         _currentUserMock  = new Mock<ICurrentUserService>();
+        _emailMock        = new Mock<IEmailService>();
         _loggerMock       = new Mock<ILogger<EmployeeService>>();
 
         _currentUserMock.Setup(c => c.UserId).Returns(1);
@@ -40,7 +42,8 @@ public class EmployeeServiceNUnitTests
         _sut = new EmployeeService(
             _employeeRepoMock.Object, _userRepoMock.Object,
             _deptRepoMock.Object, _desigRepoMock.Object,
-            _auditMock.Object, _currentUserMock.Object, _loggerMock.Object);
+            _auditMock.Object, _currentUserMock.Object,
+            _emailMock.Object, _loggerMock.Object);
     }
 
     [Test]
@@ -217,7 +220,7 @@ public class EmployeeServiceNUnitTests
             EmploymentStatus = "Active", IsActive = true, CreatedAt = DateTime.UtcNow
         }).ToList();
 
-        _employeeRepoMock.Setup(r => r.GetPagedAsync(It.IsAny<PaginationParams>(), null))
+        _employeeRepoMock.Setup(r => r.GetPagedAsync(It.IsAny<PaginationParams>(), It.IsAny<int?>(), It.IsAny<int?>()))
             .ReturnsAsync((employees, 3));
 
         var result = await _sut.GetPagedAsync(new PaginationParams { PageNumber = 1, PageSize = 10 });
